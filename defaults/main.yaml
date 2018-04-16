@@ -1,0 +1,20 @@
+---
+
+# GlusfterFS release
+glusterfs_client_yumrepo_release: "{{
+  '3.13'
+    if ansible_distribution_major_version | int == 6
+    else
+  '4.0' }}"
+
+# YUM repo URL
+glusterfs_client_yumrepo_url: https://buildlogs.centos.org/centos/{{ ansible_distribution_major_version }}/storage/$basearch/gluster-{{ glusterfs_client_yumrepo_release }}/
+
+# Package to be installed (explicit version can be specified here)
+glusterfs_client_pkg: glusterfs-client
+
+# Default mount point attributes
+glusterfs_client_dir: /mnt
+glusterfs_client_dir_owner: root
+glusterfs_client_dir_group: root
+glusterfs_client_dir_mode: "0750"

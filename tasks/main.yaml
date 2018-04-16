@@ -1,0 +1,57 @@
+---
+
+- name: Test distribution
+  assert:
+    that: ansible_os_family == 'RedHat'
+
+- name: Create YUM repo file
+  yum_repository:
+    name: glusterfs
+    description: GlusterFS YUM repo
+    baseurl: "{{ glusterfs_client_yumrepo_url }}"
+    gpgcheck: no
+  tags:
+    - glusterfs_client_pkg
+
+- name: Install GlusterFS client
+  package:
+    name: "{{ glusterfs_client_pkg }}"
+  tags:
+    - glusterfs_client_pkg
+
+- name: Create mount points
+  file:
+    path: "{{ item.dir | default(glusterfs_client_dir) }}"
+    owner: "{{ item.dir_owner | default(glusterfs_client_dir_owner) }}"
+    group: "{{ item.dir_group | default(glusterfs_client_dir_group) }}"
+    mode: "{{ item.dir_mode | default(glusterfs_client_dir_mode) }}"
+    state: directory
+  with_items: "{{ glusterfs_client_volumes }}"
+  tags:
+    - glusterfs_client_volume
+
+- name: Mount volumes
+  mount:
+    path: "{{ item.dir | default(glusterfs_client_dir) }}"
+    src: "{{ item.servers[0] }}:/{{ item.name }}"
+    fstype: glusterfs
+    opts: "{{
+        (
+          'backupvolfile-server=' ~ (
+            item.servers[1:] | join(':')
+          )
+        )
+          if item.servers | length > 0
+          else
+        ''
+      }}{{
+        ','
+          if (
+            item.servers | length > 1 and
+            'opts' in item)
+          else
+        '' }}{{ item.opts | default('') }}"
+    state: "{{ item.state | default('mounted') }}"
+  with_items: "{{ glusterfs_client_volumes }}"
+  tags:
+    - glusterfs_client_volume
