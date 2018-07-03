@@ -17,7 +17,7 @@ glusterfs_client_yumrepo_release: "{{
         ansible_distribution_major_version | int < 9
       )
     ) else
-  '4.0' }}"
+  '4.1' }}"
 
 # YUM repo URL
 glusterfs_client_yumrepo_url: https://buildlogs.centos.org/centos/{{ ansible_distribution_major_version }}/storage/$basearch/gluster-{{ glusterfs_client_yumrepo_release }}/
@@ -38,6 +38,12 @@ glusterfs_client_apt_url: "{{
 
 # Package to be installed (explicit version can be specified here)
 glusterfs_client_pkg: glusterfs-client
+
+# Location of the secure-access file
+glusterfs_client_secure_access_file: /var/lib/glusterd/secure-access
+
+# Whether to create the secure-access file or not
+glusterfs_client_secure_access: no
 
 # Default mount options for all volumes
 glusterfs_client_volume_default_opts: defaults

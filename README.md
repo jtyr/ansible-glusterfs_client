@@ -27,14 +27,15 @@ Examples
   hosts: all
   vars:
     glusterfs_client_volumes:
-      # Mount 192.168.169.10:/test1 to /mnt and make 192.168.169.11 as the
-      # backupvolfile server
+      # Mount 192.168.169.10:/test1 to /mnt and make 192.168.169.11 and
+      # 192.168.169.12 as the backupvolfile server
       - name: test1
         servers:
           # First server is used as the mount source
           - 192.168.169.10
           # Any further server is used as backupvolfile server
           - 192.168.169.11
+          - 192.168.169.12
         ### Optional settings:
         # Mount point
         #dir: /data
@@ -44,12 +45,6 @@ Examples
         #dir_mode: "0775"
         # Additional mount options
         #opts: log-level=WARNING,log-file=/var/log/gluster.log
-  roles:
-    - glusterfs_client
-
-- name: GlusterFS client installation
-  hosts: ~gclient
-  vars:
   roles:
     - glusterfs_client
 ```
@@ -76,7 +71,7 @@ glusterfs_client_yumrepo_release: "{{
         ansible_distribution_major_version | int < 9
       )
     ) else
-  '4.0' }}"
+  '4.1' }}"
 
 # YUM repo URL
 glusterfs_client_yumrepo_url: https://buildlogs.centos.org/centos/{{ ansible_distribution_major_version }}/storage/$basearch/gluster-{{ glusterfs_client_yumrepo_release }}/
@@ -98,6 +93,12 @@ glusterfs_client_apt_url: "{{
 # Package to be installed (explicit version can be specified here)
 glusterfs_client_pkg: glusterfs-client
 
+# Location of the secure-access file
+glusterfs_client_secure_access_file: /var/lib/glusterd/secure-access
+
+# Whether to create the secure-access file or not
+glusterfs_client_secure_access: no
+
 # Default mount options for all volumes
 glusterfs_client_volume_default_opts: defaults
 
@@ -116,6 +117,7 @@ Dependencies
 ------------
 
 - [`glusterfs_server`](https://github.com/jtyr/ansible-glusterfs_server) (optional)
+- [`ssl_cert`](https://github.com/jtyr/ansible-ssl_cert) (optional)
 
 
 License

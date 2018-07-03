@@ -41,6 +41,13 @@
   tags:
     - glusterfs_client_pkg
 
+- name: Make sure the secure-access file {{ 'exists' if glusterfs_client_secure_access == true else 'does not exist' }}
+  file:
+    path: "{{ glusterfs_client_secure_access_file }}"
+    state: "{{ 'touch' if glusterfs_client_secure_access == true else 'absent' }}"
+  tags:
+    - glusterfs_client_ssl
+
 - name: Create mount points
   file:
     path: "{{ item.dir | default(glusterfs_client_dir) }}"
@@ -49,8 +56,6 @@
     mode: "{{ item.dir_mode | default(glusterfs_client_dir_mode) }}"
     state: directory
   with_items: "{{ glusterfs_client_volumes }}"
-  tags:
-    - glusterfs_client_volume
 
 - name: Mount volumes
   mount:
@@ -60,16 +65,18 @@
     opts: "{{
         (
           'backupvolfile-server=' ~ (
-            item.servers[1:] | join(':')
+            item.servers[1:] | difference(item.servers_exclude | default([])) | join(':')
           )
         )
-          if item.servers | length > 0
+          if item.servers | length > 1
           else
         ''
       }}{{
         ','
-          if item.servers | length > 1
-          else
+          if (
+            item.servers | length > 1 and
+            item.opts | default(glusterfs_client_volume_default_opts) | length > 1
+          ) else
         '' }}{{ item.opts | default(glusterfs_client_volume_default_opts) }}"
     state: "{{ item.state | default('mounted') }}"
   with_items: "{{ glusterfs_client_volumes }}"
